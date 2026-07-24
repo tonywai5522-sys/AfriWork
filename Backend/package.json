@@ -7,12 +7,19 @@
   "scripts": {
     "dev": "node src/server.js",
     "start": "node src/server.js",
+    "test": "node --test src/tests/auth.test.js",
     "provision:appwrite": "node src/scripts/provisionAppwrite.js"
   },
   "dependencies": {
     "cors": "^2.8.1",
     "dotenv": "^16.4.1",
     "express": "^4.21.2",
-    "node-appwrite": "^14.0.0"
+    "express-rate-limit": "^8.6.0",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "multer": "^2.2.0",
+    "node-appwrite": "^14.0.0",
+    "socket.io": "^4.8.3",
+    "uuid": "^14.0.1"
   }
 }

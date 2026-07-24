@@ -1,4 +1,4 @@
-import { useAuthContext } from '../app/AppProviders.jsx'
+import { useAuthContext } from '../context/AuthContext.jsx'
 
 export function useAuth() {
   return useAuthContext()
