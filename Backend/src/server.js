@@ -35,7 +35,7 @@ import { setNotificationSocket } from './services/notificationService.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { appConfig } from './config/appConfig.js'
 import { logger } from './utils/logger.js'
-import { securityHeaders, preventParamPollution, requestId, createCors, requestSizeLimiter, enforceContentType, securityResponseHeaders } from './middleware/securityMiddleware.js'
+import { securityHeaders, preventParamPollution, requestId, requestSizeLimiter, enforceContentType, securityResponseHeaders } from './middleware/securityMiddleware.js'
 import { sanitizeInput } from './middleware/inputSanitizer.js'
 import { standardLimiter, authLimiter } from './middleware/rateLimiter.js'
 
@@ -61,20 +61,57 @@ app.use(securityResponseHeaders())
 app.use(securityHeaders())
 
 // 4. CORS with strict origin validation
-const allowedOrigins = [
-  appConfig.frontendUrl,
-  /^http:\/\/localhost:\d+$/,
-  /^http:\/\/127\.0\.0\.1:\d+$/,
-]
+//
+// Allowed origins priority:
+//   1. FRONTEND_URL env var (e.g. https://afriwork-website.onrender.com)
+//   2. CORS_ORIGINS env var (comma-separated list of additional origins)
+//   3. Common localhost/127.0.0.1 patterns for development
+//   4. Any *.onrender.com subdomain (so preview deployments work automatically)
+//
+const parseAllowedOrigins = () => {
+  const origins = []
+
+  // Primary frontend URL from env
+  if (appConfig.frontendUrl && appConfig.frontendUrl !== 'http://localhost:5173') {
+    origins.push(appConfig.frontendUrl)
+  }
+
+  // Additional origins from CORS_ORIGINS env var (comma-separated)
+  const extraOrigins = process.env.CORS_ORIGINS
+  if (extraOrigins) {
+    extraOrigins.split(',').map(o => o.trim()).filter(Boolean).forEach(o => {
+      origins.push(o)
+    })
+  }
+
+  // Development-only patterns (localhost)
+  origins.push(/^http:\/\/localhost:\d+$/)
+  origins.push(/^http:\/\/127\.0\.0\.1:\d+$/)
+
+  // Render.com subdomains (covers all Render frontend deployments)
+  origins.push(/^https:\/\/.*\.onrender\.com$/)
+
+  return origins
+}
+
+const allowedOrigins = parseAllowedOrigins()
+
 const corsOptions = {
   origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, mobile apps, curl)
     if (!origin) return callback(null, true)
+
     const isAllowed = allowedOrigins.some(a => a instanceof RegExp ? a.test(origin) : a === origin)
     if (isAllowed) return callback(null, origin)
+
+    // In development, be permissive for ease of use
     if (appConfig.isDevelopment()) {
       logger.warn(`CORS: allowing unknown origin in dev: ${origin}`)
       return callback(null, origin)
     }
+
+    // In production, log the blocked origin for debugging
+    logger.warn(`CORS: blocked origin: ${origin}`)
     callback(new Error(`Origin ${origin} not allowed by CORS`))
   },
   credentials: true,
@@ -222,6 +259,7 @@ server.listen(port, () => {
   console.log(`🚀 AfriWork API server running on port ${port}`)
   console.log(`📋 Environment: ${appConfig.nodeEnv}`)
   console.log(`🔗 Frontend URL: ${appConfig.frontendUrl}`)
+  console.log(`🌐 Allowed origins: ${allowedOrigins.map(o => o instanceof RegExp ? o.toString() : o).join(', ')}`)
 })
 
 export default app
