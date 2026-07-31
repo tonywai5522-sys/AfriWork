@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+import { API_BASE } from './apiClient.js'
 
 class TalentServiceError extends Error {
   constructor(message, status) {
@@ -16,7 +16,7 @@ async function request(path, options = {}) {
   }
   let response
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, config)
+    response = await fetch(`${API_BASE}${path}`, config)
   } catch {
     throw new TalentServiceError('Unable to connect to the server', 0)
   }

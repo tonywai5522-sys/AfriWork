@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+import { API_BASE } from './apiClient.js'
 
 class ChatServiceError extends Error {
   constructor(message, status) {
@@ -9,7 +9,7 @@ class ChatServiceError extends Error {
 }
 
 async function request(path, options = {}) {
-  const url = `${API_BASE_URL}${path}`
+  const url = `${API_BASE}${path}`
   const config = {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     credentials: 'include',
@@ -81,7 +81,7 @@ export async function getMessages(conversationId, { page = 1, limit = 50 } = {})
 }
 
 export async function sendMessage(conversationId, formData) {
-  const url = `${API_BASE_URL}/messages/${conversationId}`
+  const url = `${API_BASE}/messages/${conversationId}`
   const response = await fetch(url, {
     method: 'POST',
     credentials: 'include',
@@ -120,7 +120,7 @@ export async function addReaction(messageId, emoji) {
 export async function uploadAttachment(file) {
   const formData = new FormData()
   formData.append('file', file)
-  const url = `${API_BASE_URL}/messages/upload`
+  const url = `${API_BASE}/messages/upload`
   const response = await fetch(url, {
     method: 'POST',
     credentials: 'include',

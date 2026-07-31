@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+import { API_BASE } from './apiClient.js'
 
 class PortfolioError extends Error {
   constructor(m, s) { super(m); this.name = 'PortfolioError'; this.status = s }
@@ -7,7 +7,7 @@ class PortfolioError extends Error {
 async function req(path, opts = {}) {
   const c = { headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) }, credentials: 'include', ...opts }
   let r
-  try { r = await fetch(`${API}${path}`, c) } catch { throw new PortfolioError('Connection failed', 0) }
+  try { r = await fetch(`${API_BASE}${path}`, c) } catch { throw new PortfolioError('Connection failed', 0) }
   let p
   try { p = await r.json() } catch { throw new PortfolioError('Invalid response', r.status) }
   if (!r.ok) throw new PortfolioError(p.message || 'Request failed', r.status)
@@ -54,7 +54,7 @@ export async function uploadMedia(file, onProgress) {
       } catch { reject(new PortfolioError('Upload failed', xhr.status)) }
     })
     xhr.addEventListener('error', () => reject(new PortfolioError('Upload failed', 0)))
-    xhr.open('POST', `${API}/portfolio/media/upload`)
+    xhr.open('POST', `${API_BASE}/portfolio/media/upload`)
     xhr.withCredentials = true
     xhr.send(formData)
   })

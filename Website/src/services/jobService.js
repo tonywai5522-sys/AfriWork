@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+import { API_BASE } from './apiClient.js'
 
 class JobError extends Error {
   constructor(m, s) { super(m); this.name = 'JobError'; this.status = s }
@@ -7,7 +7,7 @@ class JobError extends Error {
 async function req(path, opts = {}) {
   const c = { headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) }, credentials: 'include', ...opts }
   let r
-  try { r = await fetch(`${API}${path}`, c) } catch { throw new JobError('Connection failed', 0) }
+  try { r = await fetch(`${API_BASE}${path}`, c) } catch { throw new JobError('Connection failed', 0) }
   let p
   try { p = await r.json() } catch { throw new JobError('Invalid response', r.status) }
   if (!r.ok) throw new JobError(p.message || 'Request failed', r.status)

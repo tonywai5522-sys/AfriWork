@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+import { API_BASE } from './apiClient.js'
 
 class TaskServiceError extends Error {
   constructor(message, status) { super(message); this.name = 'TaskServiceError'; this.status = status }
@@ -11,7 +11,7 @@ async function request(path, options = {}) {
   }
   if (options.body instanceof FormData) delete config.headers['Content-Type']
   let response
-  try { response = await fetch(`${API_BASE_URL}${path}`, config) } catch { throw new TaskServiceError('Connection failed', 0) }
+  try { response = await fetch(`${API_BASE}${path}`, config) } catch { throw new TaskServiceError('Connection failed', 0) }
   let payload
   try { payload = await response.json() } catch { throw new TaskServiceError('Invalid response', response.status) }
   if (!response.ok) throw new TaskServiceError(payload.message || 'Request failed', response.status)

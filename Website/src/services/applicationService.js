@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+import { API_BASE } from './apiClient.js'
 
 class ApplicationError extends Error {
   constructor(m, s) { super(m); this.name = 'ApplicationError'; this.status = s }
@@ -7,7 +7,7 @@ class ApplicationError extends Error {
 async function req(path, opts = {}) {
   const c = { headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) }, credentials: 'include', ...opts }
   let r
-  try { r = await fetch(`${API}${path}`, c) } catch { throw new ApplicationError('Connection failed', 0) }
+  try { r = await fetch(`${API_BASE}${path}`, c) } catch { throw new ApplicationError('Connection failed', 0) }
   let p
   try { p = await r.json() } catch { throw new ApplicationError('Invalid response', r.status) }
   if (!r.ok) throw new ApplicationError(p.message || 'Request failed', r.status)
